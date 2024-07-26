@@ -1,4 +1,5 @@
 <template>
+  <Header />
   <RouterView v-slot="{ Component }">
     <transition>
       <component :is="Component" />
@@ -8,9 +9,10 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import Header from './components/Header.vue';
 
 const App = defineComponent({
-
+  components: { Header }
 });
 
 export default App;
