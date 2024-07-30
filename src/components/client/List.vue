@@ -23,7 +23,7 @@
             <input type="checkbox" :checked="client.isBlocked" />
           </td>
           <td class="py-2 px-4 border-b text-center">
-            <button class="text-blue-500 hover:underline" @click="openEditModal(client)">Editar</button>
+            <button class="text-blue-500 hover:underline" @click="openEditModal(client.id!)">Editar</button>
           </td>
         </tr>
       </tbody>
@@ -33,7 +33,9 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
-import ClientDTO from 'src/DTO/ClientDTO';
+import ClientDTO from '@/DTO/ClientDTO';
+import { useRouter } from 'vue-router';
+
 
 export default defineComponent({
   name: 'ClientsList',
@@ -44,9 +46,11 @@ export default defineComponent({
     }
   },
   emits: ['edit'],
-  setup(props, { emit }) {
-    const openEditModal = (client: ClientDTO) => {
-      emit('edit', client);
+  setup() {
+    const router = useRouter();
+    const openEditModal = (id: string) => {
+      console.log(id);
+      router.push(`/edit/${id}`);
     };
 
     const dateFormatter = (date: Date) => {
