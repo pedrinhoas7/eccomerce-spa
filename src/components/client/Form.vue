@@ -11,7 +11,7 @@
             <!-- Email -->
             <div>
                 <label class="block text-sm font-medium mb-2" for="email">Email:</label>
-                <input v-model="client.email" id="email" type="email"
+                <input @blur="verifyRegister('email', client.email)" v-model="client.email" id="email" type="email"
                     class="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                     maxlength="150" />
             </div>
@@ -20,16 +20,9 @@
                 <label class="block text-sm font-medium mb-2" for="phone">Telefone:</label>
                 <input v-model="client.phone" id="phone" type="text"
                     class="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    maxlength="11" />
+                    v-maska="'(##) # ####-####'" />
             </div>
-            <!-- Bloqueado -->
-            <div class="flex items-center">
-                <label class="inline-flex items-center">
-                    <input v-model="client.isBlocked" type="checkbox"
-                        class="form-checkbox h-5 w-5 text-blue-600 rounded" />
-                    <span class="ml-2 text-sm font-medium">Bloqueado</span>
-                </label>
-            </div>
+
             <!-- Tipo de Pessoa -->
             <div class="col-span-1 md:col-span-2">
                 <label class="block text-sm font-medium mb-2" for="typeClient">Tipo de Pessoa:</label>
@@ -41,19 +34,27 @@
             </div>
             <!-- CPF/CNPJ -->
             <div>
-                <label class="block text-sm font-medium mb-2" for="documentIdentifier">CPF/CNPJ:</label>
-                <input v-model="client.documentIdentifier" id="documentIdentifier" type="text"
+                <label class="block text-sm font-medium mb-2" for="documentIdentifier">{{ client.typeClient ===
+                    TypeClient.Juridica ? 'CNPJ' : 'CPF' }}</label>
+                <input @blur="verifyRegister('documentIdentifier', client.documentIdentifier)"
+                    v-model="client.documentIdentifier" id="documentIdentifier" type="text"
                     class="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    :placeholder="client.typeClient === TypeClient.Juridica ? '##.###.###/####-##' : '###.###.###-##'"
-                    maxlength="18" />
+                    v-maska="client.typeClient === TypeClient.Juridica ? '##.###.###/####-##' : '###.###.###-##'" />
             </div>
+
+            <p>CheckInscrição estadual</p>
+
             <!-- Inscrição Estadual -->
             <div v-if="client.typeClient === TypeClient.Juridica || inscriptionStateEnabled">
                 <label class="block text-sm font-medium mb-2" for="inscricaoEstadual">Inscrição Estadual:</label>
-                <input v-model="client.inscricaoEstadual" id="inscricaoEstadual" type="text"
+                <input @blur="verifyRegister('inscricaoEstadual', client.inscricaoEstadual)"
+                    v-model="client.inscricaoEstadual" id="inscricaoEstadual" type="text"
                     class="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    maxlength="12" />
+                    v-maska="'###.###.###-###'" />
             </div>
+
+            <p>CheckIsento</p>
+
             <!-- Gênero -->
             <div v-if="client.typeClient === TypeClient.Fisica">
                 <label class="block text-sm font-medium mb-2" for="typeGender">Gênero:</label>
@@ -70,6 +71,19 @@
                 <input v-model="client.birthDate" id="birthDate" type="date"
                     class="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
+
+            <!-- Bloqueado -->
+            <div class="flex items-center">
+                <label class="inline-flex items-center">
+                    <input v-model="client.isBlocked" type="checkbox"
+                        class="form-checkbox h-5 w-5 text-blue-600 rounded" />
+                    <span class="ml-2 text-sm font-medium">Bloqueado</span>
+                </label>
+            </div>
+
+
+
+
             <!-- Senha -->
             <div>
                 <label class="block text-sm font-medium mb-2" for="password">Senha:</label>
@@ -84,6 +98,7 @@
                     class="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                     minlength="8" maxlength="15" />
             </div>
+            <p class="text-red-600" v-if="error != ''">{{ error }}</p>
         </div>
         <!-- Botões -->
         <div class="flex justify-end space-x-4">
@@ -94,16 +109,24 @@
                 class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">Salvar</button>
         </div>
     </form>
+
+    <!-- Toast Component -->
+    <Toast :message="toastMessage" />
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
+import { defineComponent, ref, onMounted, reactive, watch } from 'vue';
 import ClientDTO from '@/DTO/ClientDTO';
 import { TypeClient, TypeGender } from '@/DTO/ClientDTO';
+import ClientService from '@/services/ClientService';
+import Toast from '@/components/Toast.vue';
 
 export default defineComponent({
     name: 'EditClientForm',
     emits: ['action', 'close'],
+    components: {
+        Toast
+    },
     props: {
         client: {
             type: Object as () => ClientDTO,
@@ -111,7 +134,7 @@ export default defineComponent({
         }
     },
     setup(props, context) {
-        const client = ref<ClientDTO>({
+        const client = reactive<ClientDTO>({
             id: '',
             name: '',
             email: '',
@@ -120,7 +143,7 @@ export default defineComponent({
             isBlocked: false,
             typeClient: TypeClient.Fisica,
             password: '',
-            documentName: 'CPF ou CNPJ',
+            documentName: '',
             documentIdentifier: '',
             inscricaoEstadual: '',
             typeGender: TypeGender.Masculino,
@@ -129,6 +152,8 @@ export default defineComponent({
         const confirmPassword = ref('');
         const inscriptionStateEnabled = ref(false);
         const inscricaoStateIsExempt = ref(false);
+        const error = ref('');
+        const toastMessage = ref('');
 
         const loadClientData = async () => {
             try {
@@ -152,6 +177,47 @@ export default defineComponent({
 
 
 
+        watch(() => client.password, (newValue) => {
+            if (newValue != confirmPassword.value) {
+                error.value = "As senhas não conferem";
+            } else {
+                error.value = '';
+            }
+
+        })
+
+        watch(() => confirmPassword.value, (newValue) => {
+            if (newValue != client.password) {
+                error.value = "As senhas não conferem";
+            } else {
+                error.value = '';
+            }
+
+        })
+        let interval: any;
+        const verifyRegister = async (field: string, value: string) => {
+            //Limpa o timeout
+            clearTimeout(interval);
+
+            //Remove mascara
+            if (field == 'documentIdentifier')
+                value = value.replace(/[^\d]+/g, '');
+
+            const request = await ClientService.VerifyRegister({ field: field, value: value })
+            if (request) {
+                //Alterar para o nome do campo
+                if (field == 'documentIdentifier')
+                    field = 'CPF/CNPJ';
+
+                //Aciona Toast
+                toastMessage.value = `O ${field} já está vinculado a outro Comprador`;
+                interval = setTimeout(() => {
+                    toastMessage.value = '';
+                }, 6000);
+            }
+        }
+
+
         return {
             client,
             confirmPassword,
@@ -159,7 +225,10 @@ export default defineComponent({
             inscricaoStateIsExempt,
             saveChanges,
             TypeGender,
-            TypeClient
+            TypeClient,
+            error,
+            toastMessage,
+            verifyRegister
         };
     }
 });

@@ -1,10 +1,14 @@
 import ClientDTO from "src/DTO/ClientDTO"
-import { Delete, Get, Patch, Post, Put} from "./BaseService"
+import { Delete, Get, Post, Put} from "./BaseService"
+import VerifyRegisterDTO from "src/DTO/VerifyRegisterDTO";
 
 
 export default {
   getAll() {
     return Get<ClientDTO[]>('api/Clients');
+  },
+  VerifyRegister(VerifyRegister: VerifyRegisterDTO) {
+    return Post<VerifyRegisterDTO, boolean>(`api/Clients/VerifyRegister`, VerifyRegister);
   },
   create(client : ClientDTO) {
     return Post('api/Clients', client);
