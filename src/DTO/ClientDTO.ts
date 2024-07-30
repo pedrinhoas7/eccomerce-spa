@@ -3,6 +3,6 @@ export default interface ClientDTO{
     name: string;
     email: string;
     phone: string;
-    date: string;
+    creationDate: Date;
     isBlocked: boolean;
 }
