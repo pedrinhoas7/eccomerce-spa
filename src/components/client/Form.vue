@@ -22,7 +22,6 @@
                     class="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                     v-maska="'(##) # ####-####'" />
             </div>
-
             <!-- Tipo de Pessoa -->
             <div class="col-span-1 md:col-span-2">
                 <label class="block text-sm font-medium mb-2" for="typeClient">Tipo de Pessoa:</label>
@@ -41,9 +40,6 @@
                     class="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                     v-maska="client.typeClient === TypeClient.Juridica ? '##.###.###/####-##' : '###.###.###-##'" />
             </div>
-
-            <p>CheckInscrição estadual</p>
-
             <!-- Inscrição Estadual -->
             <div v-if="client.typeClient === TypeClient.Juridica || inscriptionStateEnabled">
                 <label class="block text-sm font-medium mb-2" for="inscricaoEstadual">Inscrição Estadual:</label>
@@ -52,9 +48,6 @@
                     class="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                     v-maska="'###.###.###-###'" />
             </div>
-
-            <p>CheckIsento</p>
-
             <!-- Gênero -->
             <div v-if="client.typeClient === TypeClient.Fisica">
                 <label class="block text-sm font-medium mb-2" for="typeGender">Gênero:</label>
@@ -71,7 +64,6 @@
                 <input v-model="client.birthDate" id="birthDate" type="date"
                     class="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
-
             <!-- Bloqueado -->
             <div class="flex items-center">
                 <label class="inline-flex items-center">
@@ -80,10 +72,6 @@
                     <span class="ml-2 text-sm font-medium">Bloqueado</span>
                 </label>
             </div>
-
-
-
-
             <!-- Senha -->
             <div>
                 <label class="block text-sm font-medium mb-2" for="password">Senha:</label>
