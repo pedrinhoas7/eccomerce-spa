@@ -33,7 +33,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
-import ClientDTO from '@/DTO/ClientDTO';
+import ClientDTO from '../../DTO/ClientDTO';
 import { useRouter } from 'vue-router';
 
 

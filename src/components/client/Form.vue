@@ -116,10 +116,10 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, reactive, watch } from 'vue';
-import ClientDTO from '@/DTO/ClientDTO';
-import { TypeClient, TypeGender } from '@/DTO/ClientDTO';
-import ClientService from '@/services/ClientService';
-import Toast from '@/components/Toast.vue';
+import ClientDTO from '../../DTO/ClientDTO';
+import { TypeClient, TypeGender } from '../../DTO/ClientDTO';
+import ClientService from '../../services/ClientService';
+import Toast from '../../components/Toast.vue';
 
 export default defineComponent({
     name: 'EditClientForm',
