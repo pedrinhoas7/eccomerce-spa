@@ -134,7 +134,9 @@ export default defineComponent({
         }
     },
     setup(props, context) {
-        const client = reactive<ClientDTO>({
+
+        console.log("cliente", props.client);
+        const client = ref<ClientDTO>({
             id: '',
             name: '',
             email: '',
@@ -149,7 +151,7 @@ export default defineComponent({
             typeGender: TypeGender.Masculino,
             birthDate: new Date()
         });
-        const confirmPassword = ref('');
+        const confirmPassword = ref(null);
         const inscriptionStateEnabled = ref(false);
         const inscricaoStateIsExempt = ref(false);
         const error = ref('');
@@ -167,7 +169,9 @@ export default defineComponent({
         onMounted(loadClientData);
 
         const saveChanges = async () => {
+
             try {
+                validateForm();
                 context.emit('action', client.value);
             }
             catch (error) {
@@ -175,9 +179,36 @@ export default defineComponent({
             }
         };
 
+        const validateForm = () => {
+            error.value = ''; 
+
+            const requiredFields: { [key: string]: string } = {
+                name: 'Nome do Cliente/Razão Social',
+                email: 'Email',
+                phone: 'Telefone',
+                documentIdentifier: client.value.typeClient === TypeClient.Juridica ? 'CNPJ' : 'CPF',
+                password: 'Senha',
+                confirmPassword: 'Confirmação de Senha',
+            };
+
+            for (const [key, fieldName] of Object.entries(requiredFields)) {
+                const value = client.value[key as keyof ClientDTO] || '';
+
+                if (value === '' && key !== 'confirmPassword' && key !== 'inscricaoEstadual') {
+                    error.value = `O campo ${fieldName} é obrigatório`;
+                    throw new Error(error.value);
+                }
+            }
+
+            if (client.value.typeClient === TypeClient.Juridica && client.value.inscricaoEstadual === '') {
+                error.value = 'O campo Inscrição Estadual é obrigatório.';
+                throw new Error(error.value);
+            }
+        };
 
 
-        watch(() => client.password, (newValue) => {
+
+        watch(() => client.value.password, (newValue) => {
             if (newValue != confirmPassword.value) {
                 error.value = "As senhas não conferem";
             } else {
@@ -187,7 +218,7 @@ export default defineComponent({
         })
 
         watch(() => confirmPassword.value, (newValue) => {
-            if (newValue != client.password) {
+            if (newValue != client.value.password) {
                 error.value = "As senhas não conferem";
             } else {
                 error.value = '';
